@@ -2,6 +2,7 @@ package com.leavingston.exchangerates
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -30,11 +31,9 @@ import java.util.*
 // რა თქმაუნდა შეგვიძლია გამშვები ექთივითის შეცვლა
 // ამ ექთივითზე მიბმული ლეიაუთის მოქმედებები ხდება ამ ექთივითში
 class MainActivity : AppCompatActivity() {
-
-    var GEL : Double = 0.0
-    var EUR : Double = 0.0
-    var date = ""
-
+    private var GEL : Double = 0.0
+    private var EUR : Double = 0.0
+    private var data = ""
 
     private lateinit var factory: Factory
     private lateinit var DBViewModel : DBViewModel
@@ -65,19 +64,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         initViewModel(this)
-
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
-        downloadData()
+        chechkWhatToDo()
 
         //ღილაკზე დაწკაპუნების შემთხვევაში მეორდება ქოლის მეთოდი
         binding.showRatesButton.setOnClickListener {
 
-            if (isNetworkAvailable()){
-                downloadData()
-            }
-            else{
-                downloadSavedData()
-            }
+            chechkWhatToDo()
 
             val currentDateTime = Calendar.getInstance().time
 
@@ -92,6 +85,15 @@ class MainActivity : AppCompatActivity() {
         DBViewModel.getRates().observe(this , Observer {
             setDefaultsFromDb(it)
         })
+    }
+
+    private fun chechkWhatToDo(){
+        if(isNetworkAvailable()){
+            downloadData()
+        }
+        else{
+            downloadSavedData()
+        }
     }
 
     fun setDefaultsFromDb(ratesModel: ratesModel?){
@@ -115,8 +117,12 @@ class MainActivity : AppCompatActivity() {
     private fun downloadData(){
         exchangeViewModel.data.observe(this , Observer {
                 succesUSD(it)
-
             })
+        eurRatesViewModel.data.observe(this , Observer{
+            succesEUR(it)
+        })
+
+
 
             exchangeViewModel.loadingState.observe(this, androidx.lifecycle.Observer {
                 if (it.status.name == "FAILED") {
@@ -128,9 +134,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
-            eurRatesViewModel.data.observe(this , Observer{
-                succesEUR(it)
-            })
+
         eurRatesViewModel.loadingState.observe(this , Observer{
             if (it.status.name == "FAILED"){
                 downloadSavedData()
@@ -138,11 +142,17 @@ class MainActivity : AppCompatActivity() {
         })
 
 
+
     }
     private fun succesUSD(result: Example) {
         val USD = result?.conversionRates?.GEL.toString()
         GEL = result.conversionRates.GEL
         binding.USD.text = "$USD ლარს"
+        val currentDateTime = Calendar.getInstance().time
+        data = currentDateTime.toString()
+
+
+        saveToDB(ratesModel(0,result.conversionRates.GEL,this.EUR,data))
 
 
     }
@@ -153,13 +163,15 @@ class MainActivity : AppCompatActivity() {
         binding.timeWhenUpdated.text = currentDateTime.toString()
 
         this.EUR = it?.conversionRates?.GEL!!
-        date = currentDateTime.toString()
-        DBViewModel.deleteRates()
-        DBViewModel.saveRates(ratesModel(0,GEL , this.EUR , date))
+        data = currentDateTime.toString()
 
-
+        saveToDB(ratesModel(0,GEL,this.EUR,data))
     }
 
+    private fun saveToDB(ratesModel: ratesModel) {
+        DBViewModel.deleteRates()
+        DBViewModel.saveRates(ratesModel)
+    }
 
 
     // აქ მოწმდება ინტერნეტი არის ჩართული თუ არა

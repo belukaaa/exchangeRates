@@ -7,6 +7,16 @@ import com.leavingston.exchangerates.repository.roomRepository
 
 class DBViewModel(private val repo:roomRepository ) : ViewModel(){
 
+    var USD : Double  = 0.0
+    var EUR : Double  = 0.0
+    var data : String = ""
+
+    val ratesModel = ratesModel(0,USD,EUR,data)
+
+    fun saveRatess(){
+        repo.addRates(ratesModel)
+    }
+
     fun saveRates(ratesModel: ratesModel){
         repo.addRates(ratesModel)
     }
