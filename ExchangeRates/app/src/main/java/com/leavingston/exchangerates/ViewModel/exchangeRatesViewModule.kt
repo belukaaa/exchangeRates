@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import com.leavingston.exchangerates.loadingState.LoadingState
 import com.leavingston.exchangerates.models.Example
 import com.leavingston.exchangerates.repository.ExchangeRatesRepo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,7 +19,7 @@ import retrofit2.Response
 // ViewModel - არის დამაკავშირებელი view სა და data - ს შორის , როგორც ორი კუნძულს შორის ხიდი .
 // აქ ხდება ძირითადი მონაცემების გადამუშავება და შემდეგ რესფონსის სახით მისდის view-ს(fragment,activity e.t.c.) - გადამუშავებული დათა --
 // მიღების შემდეგ , ჩვენი ვიუს კომპონენტში ვანიჭებთ მოცემულ ინფრომაციას , ლეიაუთზე აღნიშნულ ობიექტებს
-class exchangeRatesViewModule(private val repo : ExchangeRatesRepo ) : ViewModel(), Callback<Example> {
+class exchangeRatesViewModule(private val repo : ExchangeRatesRepo ) : ViewModel(){
 
     // ეს არის enum კლასის ობიექტი სადაც ვინახავთ ჩვენს მიერ მიღებული ქოლის რესფონსს
     val _loadingState = MutableLiveData<LoadingState>()
@@ -27,39 +30,42 @@ class exchangeRatesViewModule(private val repo : ExchangeRatesRepo ) : ViewModel
     val data : LiveData<Example>
         get() = _data
 
-    //ინიტ ბლოკი , ახდენს ინიციალიზაციას შიგ მოცემული მეთოდისა თუ პარამეტრისა
-    init {
-        fetchData()
-    }
 
-    fun fetchData() {
-        _loadingState.postValue(LoadingState.LOADED)
-        repo.getRates().enqueue(this)
-
-    }
 
     //ეს არის ჩვენი ქოლბექის რესფონსი , თუ შედგა სერვერთან კავშირი და დაგვიბრუნდა პასუხი
-    override fun onResponse(call: Call<Example>, response: Response<Example>) {
-        // აქ მოწმდება თუ დავუკავშირდით სერვერს და ყველაფერმა კარგად ჩაიარა
-        if (response.isSuccessful){
-            Log.e("wywrywwywy" , "$response")
+//    override fun onResponse(call: Call<Example>, response: Response<Example>) {
+//        // აქ მოწმდება თუ დავუკავშირდით სერვერს და ყველაფერმა კარგად ჩაიარა
+//        if (response.isSuccessful){
+//            Log.e("wywrywwywy" , "$response")
+//
+//            _data.postValue(response.body())
+//            _loadingState.postValue(LoadingState.LOADED)
+//            //აქ ყველა დანარჩენ შემთხვევას ვაფიქსირებთ , სერვერის გასხმას , ნელ კავშირს და სხვა მრავალ ყლეობას
+//        }else {
+//            Log.e("Tag" , "$response")
+//
+//            _loadingState.postValue(LoadingState.error(response.toString()))
+//        }
+//    }
+//    // თუ სერვერს ვერ დავუკავშირდით მოდის ამ მეთოდის პასუხი
+//    override fun onFailure(call: Call<Example>, t: Throwable) {
+//
+//        _loadingState.postValue(LoadingState.error(t.message))
+//        Log.e("Tag" , "$t")
+//    }
 
-            _data.postValue(response.body())
+    val response = GlobalScope.launch(Dispatchers.IO) {
+        val body = repo.getUsdRates()
+        if (body.isSuccessful){
+
+            _data.postValue(body.body())
             _loadingState.postValue(LoadingState.LOADED)
-            //აქ ყველა დანარჩენ შემთხვევას ვაფიქსირებთ , სერვერის გასხმას , ნელ კავშირს და სხვა მრავალ ყლეობას
-        }else {
-            Log.e("Tag" , "$response")
-
-            _loadingState.postValue(LoadingState.error(response.toString()))
+        }else{
+            _loadingState.postValue(LoadingState.error(body.message()))
+            Log.i("dgdsgsdg" , "body -> ${body.body()} ,message -> ${body.message()} , errorBody -> ${body.errorBody()}")
         }
-    }
-    // თუ სერვერს ვერ დავუკავშირდით მოდის ამ მეთოდის პასუხი
-    override fun onFailure(call: Call<Example>, t: Throwable) {
 
-        _loadingState.postValue(LoadingState.error(t.message))
-        Log.e("Tag" , "$t")
     }
-
 
 
 

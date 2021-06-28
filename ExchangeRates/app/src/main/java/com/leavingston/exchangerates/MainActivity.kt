@@ -71,8 +71,8 @@ class MainActivity : AppCompatActivity() {
         initViewModel(this)
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
 
-        downloadData()
 
+        chechkWhatToDo()
 
         //ღილაკზე დაწკაპუნების შემთხვევაში მეორდება ქოლის მეთოდი
         binding.showRatesButton.setOnClickListener {
@@ -86,6 +86,11 @@ class MainActivity : AppCompatActivity() {
         binding.saveRatesButton.setOnClickListener {
             saveToDB(ratesModel(0,GEL,EUR,data))
 
+        }
+        binding.button.setOnClickListener {
+            if(GEL != 0.0 && EUR != 0.0){
+                startActivity(ConvertingActivity.buildIntent(this , ratesModel(0,GEL,EUR,data)))
+            }
         }
     }
 
@@ -113,6 +118,7 @@ class MainActivity : AppCompatActivity() {
     fun setDefaultsFromDb(ratesModel: ratesModel?) {
 
         if (ratesModel?.GEL == null) {
+            setInvisible(binding.button)
             setInvisible(binding.saveRatesButton)
             setInvisible(binding.showRatesButton)
             setInvisible(binding.valuteCurseHeader)
@@ -123,6 +129,7 @@ class MainActivity : AppCompatActivity() {
             setInvisible(binding.timeWhenUpdated)
 
         } else {
+            setVisible(binding.button)
             setVisible(binding.showRatesButton)
             setVisible(binding.valuteCurseHeader)
             setVisible(binding.textView6)
