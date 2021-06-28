@@ -12,13 +12,13 @@ interface DAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addRates(rates : ratesModel)
 
-    @Query("SELECT * FROM rates")
+    @Query("SELECT * FROM rates WHERE id = 0")
     fun getRates() : LiveData<ratesModel>
 
     @Update
     fun updateRates(updatingRates : ratesModel)
 
-    @Query("DELETE FROM rates")
+    @Query("DELETE FROM rates WHERE id = 0")
     fun deleteRates()
 
 }

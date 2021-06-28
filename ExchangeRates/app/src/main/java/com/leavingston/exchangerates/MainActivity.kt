@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
@@ -22,6 +23,8 @@ import com.leavingston.exchangerates.models.ratesModel
 import com.leavingston.exchangerates.repository.roomRepository
 import com.leavingston.exchangerates.room.DAO
 import com.leavingston.exchangerates.room.DataBase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.time.format.DateTimeFormatter
@@ -65,7 +68,9 @@ class MainActivity : AppCompatActivity() {
 
         initViewModel(this)
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
-        chechkWhatToDo()
+
+        downloadData()
+        
 
         //ღილაკზე დაწკაპუნების შემთხვევაში მეორდება ქოლის მეთოდი
         binding.showRatesButton.setOnClickListener {
@@ -76,9 +81,6 @@ class MainActivity : AppCompatActivity() {
 
             binding.timeWhenUpdated.text = currentDateTime.toString()
         }
-
-
-
     }
 
     private fun downloadSavedData() {
@@ -96,12 +98,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun setDefaultsFromDb(ratesModel: ratesModel?){
-        val EUR1 = ratesModel?.EUR
-        val USD1 = ratesModel?.GEL
-        binding.USD.text = "$USD1 ლარს"
-        binding.EUR.text = "$EUR1 ლარს"
-        binding.timeWhenUpdated.text = ratesModel?.UPDATED_TIME
+    fun setDefaultsFromDb(ratesModel: ratesModel?) {
+
+        if (ratesModel?.GEL == null) {
+            binding.valuteCurseHeader.visibility = View.INVISIBLE
+            binding.USD.text = "დაუკავშირდი ინტერნეტს"
+            binding.textView6.visibility = View.INVISIBLE
+            binding.textView7.visibility = View.INVISIBLE
+
+            binding.EUR.visibility = View.INVISIBLE
+
+            binding.timeWhenUpdated.visibility = View.INVISIBLE
+
+        } else {
+            val EUR1 = ratesModel?.EUR
+            val USD1 = ratesModel?.GEL
+            binding.USD.text = "$USD1 ლარს"
+            binding.EUR.text = "$EUR1 ლარს"
+            binding.timeWhenUpdated.text = ratesModel?.UPDATED_TIME
+        }
     }
 
     private fun initViewModel(activity: MainActivity) {
@@ -126,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
             exchangeViewModel.loadingState.observe(this, androidx.lifecycle.Observer {
                 if (it.status.name == "FAILED") {
-                    if (isNetworkAvailable()) {
+                    if (!isNetworkAvailable()) {
                         downloadSavedData()
                     } else {
                         downloadSavedData()
@@ -144,12 +159,18 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    private fun internetNorAvailable() {
+
+    }
+
     private fun succesUSD(result: Example) {
         val USD = result?.conversionRates?.GEL.toString()
         GEL = result.conversionRates.GEL
         binding.USD.text = "$USD ლარს"
         val currentDateTime = Calendar.getInstance().time
         data = currentDateTime.toString()
+
 
 
         saveToDB(ratesModel(0,result.conversionRates.GEL,this.EUR,data))
@@ -165,7 +186,6 @@ class MainActivity : AppCompatActivity() {
         this.EUR = it?.conversionRates?.GEL!!
         data = currentDateTime.toString()
 
-        saveToDB(ratesModel(0,GEL,this.EUR,data))
     }
 
     private fun saveToDB(ratesModel: ratesModel) {
