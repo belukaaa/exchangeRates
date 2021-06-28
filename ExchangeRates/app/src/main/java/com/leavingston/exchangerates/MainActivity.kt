@@ -2,15 +2,11 @@ package com.leavingston.exchangerates
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.leavingston.exchangerates.ViewModel.DBViewModel
@@ -18,16 +14,12 @@ import com.leavingston.exchangerates.ViewModel.EurRatesViewModel
 import com.leavingston.exchangerates.ViewModel.Factory
 import com.leavingston.exchangerates.ViewModel.exchangeRatesViewModule
 import com.leavingston.exchangerates.databinding.ActivityMainBinding
-import com.leavingston.exchangerates.loadingState.LoadingState
 import com.leavingston.exchangerates.models.Example
 import com.leavingston.exchangerates.models.ratesModel
 import com.leavingston.exchangerates.repository.roomRepository
 import com.leavingston.exchangerates.room.DAO
 import com.leavingston.exchangerates.room.DataBase
-import kotlinx.coroutines.*
-import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 // მეინ ექთივითი არის ლანჩერ ექთივითი საიდანაც ისტარტება ჩვენი აპლიკაცია , გაწერილია მანიფესტ ფაილში
@@ -47,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     //ვიუმოდელების ინიციალიზაცია , დი - ს შემდეგ
     private val exchangeViewModel by viewModel<exchangeRatesViewModule>()
     private val eurRatesViewModel by viewModel<EurRatesViewModel>()
+
 
     // ვიუ ბაინდის ობიექტი რომლის ინიციალიზაცია საჭიროა ონქრიეითში
     private lateinit var binding: ActivityMainBinding
@@ -118,7 +111,7 @@ class MainActivity : AppCompatActivity() {
     fun setDefaultsFromDb(ratesModel: ratesModel?) {
 
         if (ratesModel?.GEL == null) {
-            setInvisible(binding.button)
+//            setInvisible(binding.button)
             setInvisible(binding.saveRatesButton)
             setInvisible(binding.showRatesButton)
             setInvisible(binding.valuteCurseHeader)
@@ -129,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             setInvisible(binding.timeWhenUpdated)
 
         } else {
-            setVisible(binding.button)
+//            setVisible(binding.button)
             setVisible(binding.showRatesButton)
             setVisible(binding.valuteCurseHeader)
             setVisible(binding.textView6)
@@ -162,10 +155,15 @@ class MainActivity : AppCompatActivity() {
         binding.timeWhenUpdated.visibility = View.VISIBLE
 
         exchangeViewModel.data.observe(this , Observer {
+            GEL =  it.conversionRates.GEL
+        })
+        exchangeViewModel.data.observe(this , Observer {
                 succesUSD(it)
+            GEL = it.conversionRates.GEL
             })
         eurRatesViewModel.data.observe(this , Observer{
             succesEUR(it)
+            EUR = it.conversionRates.GEL
         })
 
 
@@ -197,10 +195,7 @@ class MainActivity : AppCompatActivity() {
         val currentDateTime = Calendar.getInstance().time
         data = currentDateTime.toString()
 
-
-
         saveToDB(ratesModel(0,result.conversionRates.GEL,this.EUR,data))
-
 
     }
     private fun succesEUR(it: Example?) {

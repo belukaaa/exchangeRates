@@ -31,6 +31,9 @@ class exchangeRatesViewModule(private val repo : ExchangeRatesRepo ) : ViewModel
         get() = _data
 
 
+    fun getGel(): Double? {
+        return data.value?.conversionRates?.GEL
+    }
 
     //ეს არის ჩვენი ქოლბექის რესფონსი , თუ შედგა სერვერთან კავშირი და დაგვიბრუნდა პასუხი
 //    override fun onResponse(call: Call<Example>, response: Response<Example>) {

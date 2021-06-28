@@ -22,7 +22,9 @@ class EurRatesViewModel(private val repo : ExchangeRatesRepo) : ViewModel() {
     val data : LiveData<Example>
         get() = _data
 
-
+    fun getGel(): Double? {
+        return data.value?.conversionRates?.GEL
+    }
 
     val respone = GlobalScope.launch(Dispatchers.IO) {
         val rates = repo.getEurRates()

@@ -82,11 +82,21 @@ class ConvertingActivity : AppCompatActivity() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
+                val result = convertUSDtoGEL(start , ratesModel?.GEL!!.toDouble()!!)
+
+                binding.USDtoGELConvert.text = result.toString()
+
             }
 
         })
 
 
+    }
+
+    private fun convertUSDtoGEL(x : Int , y : Double) : Double{
+        val result : Double = x*y
+
+        return result
     }
 
 
