@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -69,16 +70,14 @@ class MainActivity : AppCompatActivity() {
 
         //ღილაკზე დაწკაპუნების შემთხვევაში მეორდება ქოლის მეთოდი
         binding.showRatesButton.setOnClickListener {
-
             chechkWhatToDo()
+            }
 
-            val currentDateTime = Calendar.getInstance().time
 
-            binding.timeWhenUpdated.text = currentDateTime.toString()
-        }
         binding.saveRatesButton.setOnClickListener {
-            saveToDB(ratesModel(0,GEL,EUR,data))
-
+            if(isNetworkAvailable()) {
+                saveToDB(ratesModel(0, GEL, EUR, data))
+            }
         }
         binding.button.setOnClickListener {
             if(GEL != 0.0 && EUR != 0.0){

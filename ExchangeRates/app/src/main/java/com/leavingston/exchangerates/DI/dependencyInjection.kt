@@ -1,6 +1,8 @@
 package com.leavingston.exchangerates.DI
 
+import android.app.Application
 import androidx.room.Dao
+import androidx.room.Room
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -13,7 +15,9 @@ import com.leavingston.exchangerates.networking.RemoteApiService
 import com.leavingston.exchangerates.repository.ExchangeRatesRepo
 import com.leavingston.exchangerates.repository.roomRepository
 import com.leavingston.exchangerates.room.DAO
+import com.leavingston.exchangerates.room.DataBase
 import okhttp3.OkHttpClient
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -23,7 +27,19 @@ val viewModelModule = module {
     //რეტროფიტის ინსტანსის შექმნა , შემდეგში რო დაგჭირდება და რო გამოიყენო , ახალ ახალი რეტროფიტის ობიექტების შექმნის ნაცვლად
     var retrofitInstance : Retrofit? = null
 
-
+//    fun provideDataBase(application: Application) : DataBase {
+//        return Room.databaseBuilder(application , DataBase::class.java , "rates")
+//            .fallbackToDestructiveMigration()
+//            .build()
+//
+//    }
+//    fun provideDao(dataBase: DataBase) : DAO {
+//
+//        return dataBase.dao()
+//    }
+//
+//    single { provideDataBase(application = androidApplication()) }
+//    single {provideDao(get())}
 
     // აპი ინტერფეის კლასის შექმნა
     fun provideUseApi(retrofit: Retrofit) : RemoteApiService{
