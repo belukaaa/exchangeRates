@@ -12,7 +12,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class EurRatesViewModel(private val repo : ExchangeRatesRepo) : ViewModel() , Callback<Example> {
-    private val _loadingState = MutableLiveData<LoadingState>()
+    val _loadingState = MutableLiveData<LoadingState>()
     val loadingState: LiveData<LoadingState>
         get() = _loadingState
 

@@ -19,7 +19,7 @@ import retrofit2.Response
 class exchangeRatesViewModule(private val repo : ExchangeRatesRepo ) : ViewModel(), Callback<Example> {
 
     // ეს არის enum კლასის ობიექტი სადაც ვინახავთ ჩვენს მიერ მიღებული ქოლის რესფონსს
-    private val _loadingState = MutableLiveData<LoadingState>()
+    val _loadingState = MutableLiveData<LoadingState>()
     val loadingState: LiveData<LoadingState>
         get() = _loadingState
     // აქ ვინახავთ ქოლიდან დაბრუნებულ რესფონსს , თვითონ ეს კი არის ინკაფსულაციის მაგალითი

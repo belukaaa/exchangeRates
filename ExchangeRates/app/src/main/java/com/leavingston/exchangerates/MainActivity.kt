@@ -18,13 +18,13 @@ import com.leavingston.exchangerates.ViewModel.EurRatesViewModel
 import com.leavingston.exchangerates.ViewModel.Factory
 import com.leavingston.exchangerates.ViewModel.exchangeRatesViewModule
 import com.leavingston.exchangerates.databinding.ActivityMainBinding
+import com.leavingston.exchangerates.loadingState.LoadingState
 import com.leavingston.exchangerates.models.Example
 import com.leavingston.exchangerates.models.ratesModel
 import com.leavingston.exchangerates.repository.roomRepository
 import com.leavingston.exchangerates.room.DAO
 import com.leavingston.exchangerates.room.DataBase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.time.format.DateTimeFormatter
@@ -66,11 +66,19 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(view)
 
+        GlobalScope.launch {
+            withContext(Dispatchers.Main){
+                if (isNetworkAvailable()){
+                    downloadData()
+                }
+            }
+        }
+
         initViewModel(this)
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
 
         downloadData()
-        
+
 
         //ღილაკზე დაწკაპუნების შემთხვევაში მეორდება ქოლის მეთოდი
         binding.showRatesButton.setOnClickListener {
@@ -84,33 +92,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun downloadSavedData() {
-        DBViewModel.getRates().observe(this , Observer {
-            setDefaultsFromDb(it)
-        })
+        if (isNetworkAvailable()){
+            downloadData()
+        }else {
+            DBViewModel.getRates().observe(this, Observer {
+                setDefaultsFromDb(it)
+            })
+        }
     }
 
     private fun chechkWhatToDo(){
-        if(isNetworkAvailable()){
-            downloadData()
-        }
-        else{
             downloadSavedData()
-        }
+        
     }
 
     fun setDefaultsFromDb(ratesModel: ratesModel?) {
 
         if (ratesModel?.GEL == null) {
+            binding.showRatesButton.visibility = View.INVISIBLE
             binding.valuteCurseHeader.visibility = View.INVISIBLE
             binding.USD.text = "დაუკავშირდი ინტერნეტს"
             binding.textView6.visibility = View.INVISIBLE
             binding.textView7.visibility = View.INVISIBLE
-
             binding.EUR.visibility = View.INVISIBLE
-
             binding.timeWhenUpdated.visibility = View.INVISIBLE
 
         } else {
+
+            binding.showRatesButton.visibility = View.VISIBLE
+            binding.valuteCurseHeader.visibility = View.VISIBLE
+            binding.textView6.visibility = View.VISIBLE
+            binding.textView7.visibility = View.VISIBLE
+            binding.EUR.visibility = View.VISIBLE
+            binding.timeWhenUpdated.visibility = View.VISIBLE
             val EUR1 = ratesModel?.EUR
             val USD1 = ratesModel?.GEL
             binding.USD.text = "$USD1 ლარს"
@@ -130,6 +144,12 @@ class MainActivity : AppCompatActivity() {
 
     //აქ ხდება ინფორმაციის წამოღება ვიუმოდელიდან , ვიუმოდელი თავის წილად უკავშირდება რეპოზიტორის , ის ინტერფეისით აზავნის ქოლს სერვერზე და მოგვდის მონაცემები
     private fun downloadData(){
+        binding.valuteCurseHeader.visibility = View.VISIBLE
+        binding.textView6.visibility = View.VISIBLE
+        binding.textView7.visibility = View.VISIBLE
+        binding.EUR.visibility = View.VISIBLE
+        binding.timeWhenUpdated.visibility = View.VISIBLE
+
         exchangeViewModel.data.observe(this , Observer {
                 succesUSD(it)
             })
@@ -141,7 +161,7 @@ class MainActivity : AppCompatActivity() {
 
             exchangeViewModel.loadingState.observe(this, androidx.lifecycle.Observer {
                 if (it.status.name == "FAILED") {
-                    if (!isNetworkAvailable()) {
+                    if (isNetworkAvailable()) {
                         downloadSavedData()
                     } else {
                         downloadSavedData()
@@ -159,11 +179,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
-    private fun internetNorAvailable() {
-
-    }
-
     private fun succesUSD(result: Example) {
         val USD = result?.conversionRates?.GEL.toString()
         GEL = result.conversionRates.GEL
