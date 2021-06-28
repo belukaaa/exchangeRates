@@ -29,18 +29,35 @@
         app:layout_constraintTop_toTopOf="@+id/textView7" />
 
     <Button
-        android:textColor="@android:color/white"
         android:id="@+id/showRatesButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="50dp"
         android:background="@drawable/update_rates_button"
         android:elevation="0dp"
         android:padding="15dp"
         android:text="ვალუტის განახლება"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@android:color/white"
+        app:layout_constraintEnd_toStartOf="@+id/saveRatesButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeWhenUpdated" />
+
+    <Button
+        android:id="@+id/saveRatesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/update_rates_button"
+        android:elevation="0dp"
+        android:padding="15dp"
+        android:text="ვალუტის შენახვა"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/showRatesButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.888"
+        app:layout_constraintStart_toEndOf="@+id/showRatesButton"
+        app:layout_constraintTop_toTopOf="@+id/showRatesButton" />
 
     <TextView
         android:id="@+id/valuteCurseHeader"

@@ -66,13 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(view)
 
-        GlobalScope.launch {
-            withContext(Dispatchers.Main){
-                if (isNetworkAvailable()){
-                    downloadData()
-                }
-            }
-        }
+
 
         initViewModel(this)
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
@@ -89,6 +83,10 @@ class MainActivity : AppCompatActivity() {
 
             binding.timeWhenUpdated.text = currentDateTime.toString()
         }
+        binding.saveRatesButton.setOnClickListener {
+            saveToDB(ratesModel(0,GEL,EUR,data))
+
+        }
     }
 
     private fun downloadSavedData() {
@@ -103,28 +101,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun chechkWhatToDo(){
             downloadSavedData()
-        
+
+    }
+    fun setInvisible(view : View){
+        view.visibility = View.INVISIBLE
+    }
+    fun setVisible(view: View){
+        view.visibility = View.VISIBLE
     }
 
     fun setDefaultsFromDb(ratesModel: ratesModel?) {
 
         if (ratesModel?.GEL == null) {
-            binding.showRatesButton.visibility = View.INVISIBLE
-            binding.valuteCurseHeader.visibility = View.INVISIBLE
+            setInvisible(binding.saveRatesButton)
+            setInvisible(binding.showRatesButton)
+            setInvisible(binding.valuteCurseHeader)
             binding.USD.text = "დაუკავშირდი ინტერნეტს"
-            binding.textView6.visibility = View.INVISIBLE
-            binding.textView7.visibility = View.INVISIBLE
-            binding.EUR.visibility = View.INVISIBLE
-            binding.timeWhenUpdated.visibility = View.INVISIBLE
+            setInvisible(binding.textView7)
+            setInvisible(binding.textView6)
+            setInvisible(binding.EUR)
+            setInvisible(binding.timeWhenUpdated)
 
         } else {
-
-            binding.showRatesButton.visibility = View.VISIBLE
-            binding.valuteCurseHeader.visibility = View.VISIBLE
-            binding.textView6.visibility = View.VISIBLE
-            binding.textView7.visibility = View.VISIBLE
-            binding.EUR.visibility = View.VISIBLE
-            binding.timeWhenUpdated.visibility = View.VISIBLE
+            setVisible(binding.showRatesButton)
+            setVisible(binding.valuteCurseHeader)
+            setVisible(binding.textView6)
+            setVisible(binding.textView7)
+            setVisible(binding.saveRatesButton)
+            setVisible(binding.timeWhenUpdated)
             val EUR1 = ratesModel?.EUR
             val USD1 = ratesModel?.GEL
             binding.USD.text = "$USD1 ლარს"
