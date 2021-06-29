@@ -98,18 +98,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun downloadSavedData() {
-        if (isNetworkAvailable()){
-            downloadData()
-        }else {
+
+
             DBViewModel.getRates().observe(this, Observer {
                 setDefaultsFromDb(it)
             })
-        }
+        
     }
 
     private fun chechkWhatToDo(){
+        if (isNetworkAvailable()){
+            downloadData()
+        }else{
             downloadSavedData()
-
+        }
     }
     fun setInvisible(view : View){
         view.visibility = View.INVISIBLE
@@ -164,27 +166,19 @@ class MainActivity : AppCompatActivity() {
         binding.EUR.visibility = View.VISIBLE
         binding.timeWhenUpdated.visibility = View.VISIBLE
 
-        exchangeViewModel.data.observe(this , Observer {
-            GEL =  it.conversionRates.GEL
-        })
+
         exchangeViewModel.data.observe(this , Observer {
                 succesUSD(it)
-            GEL = it.conversionRates.GEL
             })
         eurRatesViewModel.data.observe(this , Observer{
             succesEUR(it)
-            EUR = it.conversionRates.GEL
         })
 
 
 
             exchangeViewModel.loadingState.observe(this, androidx.lifecycle.Observer {
                 if (it.status.name == "FAILED") {
-                    if (isNetworkAvailable()) {
                         downloadSavedData()
-                    } else {
-                        downloadSavedData()
-                    }
                 }
             })
 
@@ -235,6 +229,7 @@ class MainActivity : AppCompatActivity() {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+
                 override fun onAvailable(network : Network) {
                     Log.e(TAG, "The default network is now: " + network)
                     CoroutineScope(Dispatchers.Main).launch {
@@ -250,6 +245,7 @@ class MainActivity : AppCompatActivity() {
                     CoroutineScope(Dispatchers.Main).launch {
 
                         internetIsOff()
+
                     }
 
                 }
