@@ -2,7 +2,11 @@ package com.leavingston.exchangerates
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.LinkProperties
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -20,6 +24,11 @@ import com.leavingston.exchangerates.models.ratesModel
 import com.leavingston.exchangerates.repository.roomRepository
 import com.leavingston.exchangerates.room.DAO
 import com.leavingston.exchangerates.room.DataBase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
@@ -27,6 +36,7 @@ import java.util.*
 // რა თქმაუნდა შეგვიძლია გამშვები ექთივითის შეცვლა
 // ამ ექთივითზე მიბმული ლეიაუთის მოქმედებები ხდება ამ ექთივითში
 class MainActivity : AppCompatActivity() {
+    val TAG = "fdfafaf"
     private var GEL : Double = 0.0
     private var EUR : Double = 0.0
     private var data = ""
@@ -61,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
 
+        checkNetworkStatus()
 
         initViewModel(this)
         // აქ ხდება ვიუმოდელიდან წამოღება იმ ინფორმაციის რომელზეც ვაკეთებთ ქოლებს
@@ -219,6 +230,59 @@ class MainActivity : AppCompatActivity() {
         val conManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val internetInfo = conManager.activeNetworkInfo
         return internetInfo != null && internetInfo.isConnected
+    }
+    private fun checkNetworkStatus(){
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network : Network) {
+                    Log.e(TAG, "The default network is now: " + network)
+                    CoroutineScope(Dispatchers.Main).launch {
+                        downloadData()
+                        internetIsOn()
+                    }
+
+                }
+
+                override fun onLost(network : Network) {
+                    Log.e(TAG, "The application no longer has a default network. The last default network was " + network)
+
+                    CoroutineScope(Dispatchers.Main).launch {
+
+                        internetIsOff()
+                    }
+
+                }
+
+                override fun onCapabilitiesChanged(network : Network, networkCapabilities : NetworkCapabilities) {
+                    Log.e(TAG, "The default network changed capabilities: " + networkCapabilities)
+                }
+
+                override fun onLinkPropertiesChanged(network : Network, linkProperties : LinkProperties) {
+                    Log.e(TAG, "The default network changed link properties: " + linkProperties)
+                }
+            })
+        }
+    }
+
+    suspend fun internetIsOn(){
+        setVisible(binding.showRatesButton)
+        setVisible(binding.valuteCurseHeader)
+        setVisible(binding.textView6)
+        setVisible(binding.textView7)
+        setVisible(binding.saveRatesButton)
+        setVisible(binding.timeWhenUpdated)
+    }
+
+   suspend fun internetIsOff(){
+        setInvisible(binding.saveRatesButton)
+        setInvisible(binding.showRatesButton)
+        setInvisible(binding.valuteCurseHeader)
+        binding.USD.text = "დაუკავშირდი ინტერნეტს"
+        setInvisible(binding.textView7)
+        setInvisible(binding.textView6)
+        setInvisible(binding.EUR)
+        setInvisible(binding.timeWhenUpdated)
     }
 
 
